@@ -310,7 +310,7 @@ Notes:
   Some IInArchive handlers will work incorrectly in that case.
 */
 
-#ifdef _MSC_VER
+#ifndef _MSC_VER
   #define MY_NO_THROW_DECL_ONLY throw()
 #else
   #define MY_NO_THROW_DECL_ONLY
