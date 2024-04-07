@@ -1512,6 +1512,7 @@
     <ClInclude Include="..\..\Archive\Inno\InnoExtract\crypto\checksum.hpp" />
     <ClInclude Include="..\..\Archive\Inno\InnoExtract\crypto\crc32.hpp" />
     <ClInclude Include="..\..\Archive\Inno\InnoExtract\crypto\hasher.hpp" />
+    <ClInclude Include="..\..\Archive\Inno\InnoExtract\crypto\iteratedhash.hpp" />
     <ClInclude Include="..\..\Archive\Inno\InnoExtract\crypto\md5.hpp" />
     <ClInclude Include="..\..\Archive\Inno\InnoExtract\crypto\sha1.hpp" />
     <ClInclude Include="..\..\Archive\Inno\InnoExtract\lib\magic_enum.hpp" />

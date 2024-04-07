@@ -1914,6 +1914,9 @@
     <ClInclude Include="..\..\..\Windows\PropVariantConv.h">
       <Filter>Windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Archive\Inno\InnoExtract\crypto\iteratedhash.hpp">
+      <Filter>Archive\Inno\InnoExtract\crypto</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\Archive\Icons\7z.ico">

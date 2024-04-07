@@ -117,7 +117,7 @@ void iterated_hash<T>::update(const char * data, size_t length) {
 template <class T>
 size_t iterated_hash<T>::hash(const char * input, size_t length) {
 	
-	if(byte_order::native() && util::is_aligned<T>(input)) {
+	if(byte_order::native() && util::is_aligned<hash_word>(input)) {
 		
 		do {
 			

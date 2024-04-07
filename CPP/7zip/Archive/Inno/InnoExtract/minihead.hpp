@@ -10,6 +10,7 @@
 #define INNOEXTRACT_HAVE_STD_CODECVT_UTF8_UTF16 1
 #define INNOEXTRACT_HAVE_STD_UNIQUE_PTR 1
 #define INNOEXTRACT_HAVE_LZMA 1
+#define INNOEXTRACT_HAVE_ARC4 1
 
 #include <chrono>
 #include <iostream>

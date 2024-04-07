@@ -283,6 +283,7 @@ struct symmetric_filter : public boost::iostreams::input
 	Impl& filter() { return _impl; }
 };
 
+// TODO: finish this
 struct zlib_decompressor : public boost::iostreams::input
 {
 	explicit zlib_decompressor(int buffer_size = boost::iostreams::default_device_buffer_size) {
@@ -301,6 +302,7 @@ struct zlib_decompressor : public boost::iostreams::input
 	}
 };
 
+// TODO: finish this
 struct bzip2_decompressor : public boost::iostreams::input
 {
 	explicit bzip2_decompressor(int buffer_size = boost::iostreams::default_device_buffer_size) {
