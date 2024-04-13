@@ -112,7 +112,7 @@ class windows_console_sink : public util::ansi_console_parser<windows_console_si
 				case 2: left = true, right = true; break;
 				case 3: deferred = true;           break;
 				default: {
-					#ifdef DEBUG
+					#ifdef _DEBUG
 					std::ostringstream oss;
 					oss << "(unsupported EL code: " << code << ")";
 					error(oss.str());
@@ -223,7 +223,7 @@ class windows_console_sink : public util::ansi_console_parser<windows_console_si
 				case 47: a &= ~bg, a |= BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE; break;
 				case 49: a &= ~bg, a |= (default_attributes & bg); break;
 				default: {
-					#ifdef DEBUG
+					#ifdef _DEBUG
 					std::ostringstream oss;
 					oss << "(unsupported SGR code: " << code << ")";
 					error(oss.str());
@@ -244,7 +244,7 @@ class windows_console_sink : public util::ansi_console_parser<windows_console_si
 			case EL:  erase_in_line(codes, end); break;
 			case SGR: select_graphic_rendition(codes, end); break;
 			default: {
-				#ifdef DEBUG
+				#ifdef _DEBUG
 				std::ostringstream oss;
 				oss << "(unknown command type: " << char(type) << ")";
 				error(oss.str());

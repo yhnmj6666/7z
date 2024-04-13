@@ -106,7 +106,7 @@ private:
 	
 protected:
 	
-	#ifdef DEBUG
+	#ifdef _DEBUG
 	void error(const std::string & str) {
 		this->impl().handle_text(str.data(), str.length());
 	}
@@ -134,7 +134,7 @@ protected:
 		try {
 			code = (s == sep) ? 0u : util::to_unsigned(s, size_t(sep - s));
 		} catch(...) {
-			#ifdef DEBUG
+			#ifdef _DEBUG
 			std::ostringstream oss;
 			oss << "(bad command code: \"";
 			oss.write(s, sep - s);

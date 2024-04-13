@@ -277,6 +277,8 @@ struct header {
 	boost::uint64_t uninstall_display_size;
 	
 	flags options;
+
+	size_t header_size;
 	
 	void load(std::istream & is, const version & version);
 	

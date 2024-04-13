@@ -149,7 +149,9 @@ void info::try_load(std::istream & is, entry_types entries, util::codepage_id fo
 		entries |= Languages;
 	}
 	
-	stream::block_reader::pointer reader = stream::block_reader::get(is, version);
+	std::shared_ptr<size_t> header_size = std::make_shared<size_t>();
+	stream::block_reader::pointer reader = stream::block_reader::get(is, version, header_size.get());
+	header.header_size = *header_size;
 	
 	debug("loading main header");
 	header.load(*reader, version);
@@ -226,8 +228,9 @@ void info::try_load(std::istream & is, entry_types entries, util::codepage_id fo
 	
 	// restart the compression stream
 	check_is_end(reader, "unknown data at end of primary header stream");
-	reader = stream::block_reader::get(is, version);
-	
+	reader = stream::block_reader::get(is, version, header_size.get());
+	header.header_size += *header_size;
+
 	debug("loading data entries");
 	load_entries(*reader, entries, header.data_entry_count, data_entries, DataEntries);
 	

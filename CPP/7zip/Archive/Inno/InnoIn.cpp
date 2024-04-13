@@ -26,9 +26,11 @@
 #include "./InnoExtract/setup/run.hpp"
 #include "./InnoExtract/stream/chunk.hpp"
 #include "./InnoExtract/util/load.hpp"
+#include "./InnoExtract/util/log.hpp"
 #include "./InnoExtract/lib/magic_enum.hpp"
 
 #include <sstream>
+#include <filesystem>
 #include <unordered_set>
 
 #define Get16(p) GetUi16(p)
@@ -96,6 +98,19 @@ constexpr std::string Flag_Clean(std::string s)
 	return s;
 }
 
+void CInArchive::InitializeLog(std::string& filename)
+{
+	namespace fs = std::filesystem;
+	const std::chrono::time_point now{ std::chrono::system_clock::now() };
+	const time_t now_c = std::chrono::system_clock::to_time_t(now);
+	const tm now_tm = *std::localtime(&now_c);
+	std::ostringstream iss;
+	iss << filename << "_" << std::put_time(&now_tm, "%Y%m%d-%H%M%S") << ".log";
+	fs::path tempDir = fs::temp_directory_path();
+	fs::path logPath = tempDir / iss.str();
+	logger::log_path = logPath;
+}
+
 HRESULT CInArchive::Open(IInStream* stream, FILETIME modifiedTime)
 {
 	_modifiedTime = modifiedTime;
@@ -123,13 +138,12 @@ UInt32 CInArchive::GetDataOffset()
 
 UInt32 CInArchive::GetNumberOfItems()
 {
-	return _info.files.size() + _embedded.GetNumberOfItems();
+	return static_cast<UInt32>(_info.files.size() + _embedded.GetNumberOfItems());
 }
 
 UInt32 CInArchive::GetHeaderSize()
 {
-	// stored_size in block.cpp
-	return 0;
+	return static_cast<UInt32>(_info.header.header_size);
 }
 
 const char* const CInArchive::GetMethod()
@@ -168,7 +182,7 @@ std::string CInArchive::GetComment()
 	return s;
 }
 
-std::shared_ptr<CAbstractItem> CInArchive::GetItem(UInt32 index)
+std::shared_ptr<CAbstractItem> CInArchive::GetItem(size_t index)
 {
 	using std::make_shared;
 	if (index >= _info.files.size())
@@ -202,18 +216,19 @@ bool CInArchive::CheckCollideLocations(UInt32 index, UInt32& firstAppearance)
 	}
 	else
 	{
-		firstAppearance = find_result->second;
+		firstAppearance = static_cast<UInt32>(find_result->second);
 		return true;
 	}
 }
 
 HRESULT CInArchive::ExtractItem(UInt32 indice, bool testMode, InteropFileStreamProgressWriter* outStream, std::string* savedBuffer)
 {
-	if (indice >= _info.files.size())
-		return _embedded.ExtractItem(indice - _info.files.size(), testMode, outStream);
+	size_t indice64 = indice;
+	if (indice64 >= _info.files.size())
+		return _embedded.ExtractItem(indice64 - _info.files.size(), testMode, outStream);
 	if (!_extractInitialized)
 		PrepareExtraction();
-	setup::file_entry& file_info = _info.files[indice];
+	setup::file_entry& file_info = _info.files[indice64];
 	if (file_info.location >= _info.data_entries.size())
 	{
 		if (file_info.location == (uint32_t)(-1))
@@ -311,7 +326,7 @@ void CInArchive::PrepareExtraction()
 void CInArchive::FindCollideLocation()
 {
 	//check for collision, both locations and file names
-	std::unordered_map<UInt32, UInt32> unique_locations; // map of unique locations to their first appearance
+	std::unordered_map<size_t, size_t> unique_locations; // map of unique locations to their first appearance
 	std::unordered_set<std::string> unique_paths;
 	for (size_t i = 0; i < _info.files.size(); i++)
 	{
@@ -350,10 +365,10 @@ CEmbeddedFiles::CEmbeddedFiles(setup::info& info, bool hasCollision, FILETIME ti
 	_time = NWindows::NTime::FileTime_To_UnixTime64(time);
 }
 
-UInt32 CEmbeddedFiles::GetNumberOfItems() const
+size_t CEmbeddedFiles::GetNumberOfItems() const
 {
 	//TODO: add more files
-	UInt32 additionalItems = 1; // inno setup script
+	size_t additionalItems = 1; // inno setup script
 	additionalItems += (_pinfo->header.license_text.empty() ? 0 : 1); // license file
 	additionalItems += _pinfo->languages.size(); // language files
 	for (const auto& lang : _pinfo->languages)
@@ -365,7 +380,7 @@ UInt32 CEmbeddedFiles::GetNumberOfItems() const
 	return additionalItems;
 }
 
-CEmbeddedItem CEmbeddedFiles::GetItem(UInt32 index) const
+CEmbeddedItem CEmbeddedFiles::GetItem(size_t index) const
 {
 	if (index == 0)
 	{
@@ -416,7 +431,7 @@ CEmbeddedItem CEmbeddedFiles::GetItem(UInt32 index) const
 	return CEmbeddedItem();
 }
 
-HRESULT CEmbeddedFiles::ExtractItem(UInt32 indice, bool testMode, InteropFileStreamProgressWriter* outStream) const
+HRESULT CEmbeddedFiles::ExtractItem(size_t indice, bool testMode, InteropFileStreamProgressWriter* outStream) const
 {
 	bool generated = false;
 	std::string data;
@@ -979,7 +994,7 @@ size_t CEmbeddedFiles::GenerateLicenseContent(std::string & outData) const
 	return _pinfo->header.license_text.length();
 }
 
-CEmbeddedItem CEmbeddedFiles::GenerateLanguageFile(UInt32 langIndex) const
+CEmbeddedItem CEmbeddedFiles::GenerateLanguageFile(size_t langIndex) const
 {
 	const auto& lang = _pinfo->languages[langIndex];
 	return CEmbeddedItem(
@@ -990,7 +1005,7 @@ CEmbeddedItem CEmbeddedFiles::GenerateLanguageFile(UInt32 langIndex) const
 	);
 }
 
-size_t CEmbeddedFiles::GenerateLanguageFileContent(UInt32 langIndex, std::string& outData) const
+size_t CEmbeddedFiles::GenerateLanguageFileContent(size_t langIndex, std::string& outData) const
 {
 	using std::ostringstream;
 	using std::endl;
@@ -1023,7 +1038,7 @@ size_t CEmbeddedFiles::GenerateLanguageFileContent(UInt32 langIndex, std::string
 	return outData.size();
 }
 
-CEmbeddedItem CEmbeddedFiles::GenerateLanguageLicense(UInt32 langIndex) const
+CEmbeddedItem CEmbeddedFiles::GenerateLanguageLicense(size_t langIndex) const
 {
 	const auto& lang = _pinfo->languages[langIndex];
 	return CEmbeddedItem(
@@ -1034,14 +1049,14 @@ CEmbeddedItem CEmbeddedFiles::GenerateLanguageLicense(UInt32 langIndex) const
 	);
 }
 
-size_t CEmbeddedFiles::GenerateLanguageLicenseContent(UInt32 langIndex, std::string& outData) const
+size_t CEmbeddedFiles::GenerateLanguageLicenseContent(size_t langIndex, std::string& outData) const
 {
 	const auto& lang = _pinfo->languages[langIndex];
 	outData = lang.license_text;
 	return lang.license_text.length();
 }
 
-CEmbeddedItem CEmbeddedFiles::GenerateWizardImage(UInt32 imageIndex) const
+CEmbeddedItem CEmbeddedFiles::GenerateWizardImage(size_t imageIndex) const
 {
 	return CEmbeddedItem(
 		"WizardImage" + std::to_string(imageIndex) + ".bmp",
@@ -1051,13 +1066,13 @@ CEmbeddedItem CEmbeddedFiles::GenerateWizardImage(UInt32 imageIndex) const
 	);
 }
 
-size_t CEmbeddedFiles::GenerateWizardImageContent(UInt32 imageIndex, std::string& outData) const
+size_t CEmbeddedFiles::GenerateWizardImageContent(size_t imageIndex, std::string& outData) const
 {
 	outData = _pinfo->wizard_images[imageIndex];
 	return outData.size();
 }
 
-CEmbeddedItem CEmbeddedFiles::GenerateWizardImageSmall(UInt32 imageIndex) const
+CEmbeddedItem CEmbeddedFiles::GenerateWizardImageSmall(size_t imageIndex) const
 {
 	return CEmbeddedItem(
 		"WizardImageSmall" + std::to_string(imageIndex) + ".bmp",
@@ -1067,7 +1082,7 @@ CEmbeddedItem CEmbeddedFiles::GenerateWizardImageSmall(UInt32 imageIndex) const
 	);
 }
 
-size_t CEmbeddedFiles::GenerateWizardImageSmallContent(UInt32 imageIndex, std::string& outData) const
+size_t CEmbeddedFiles::GenerateWizardImageSmallContent(size_t imageIndex, std::string& outData) const
 {
 	outData = _pinfo->wizard_images[imageIndex];
 	return outData.size();

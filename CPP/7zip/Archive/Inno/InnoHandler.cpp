@@ -44,7 +44,8 @@ static const Byte kArcProps[] =
 {
   kpidMethod,
   kpidSolid,
-  kpidCommented
+  kpidCommented,
+  kpidHeadersSize
 };
 
 IMP_IInArchive_Props
@@ -54,6 +55,7 @@ STDMETHODIMP CHandler::Open(IInStream* stream, const UInt64* /*maxCheckStartPosi
 {
 	IArchiveOpenVolumeCallback* ovc=nullptr;
 	FILETIME ft = {};
+	std::string fileName;
 	if(openArchiveCallback->QueryInterface(IID_IArchiveOpenVolumeCallback,(void**)&ovc)==S_OK)
 	{
 		if (ovc)
@@ -66,6 +68,14 @@ STDMETHODIMP CHandler::Open(IInStream* stream, const UInt64* /*maxCheckStartPosi
 					ft = prop.filetime;
 				}
 			}
+			if (ovc->GetProperty(kpidName, &prop) == S_OK)
+            {
+                if (prop.vt == VT_BSTR)
+                {
+					fileName = UnicodeStringToMultiByte(prop.bstrVal);
+					CInArchive::InitializeLog(fileName);
+                }
+            }
 		}
 	}
 	return _archive.Open(stream, ft);
@@ -228,6 +238,9 @@ STDMETHODIMP CHandler::GetArchiveProperty(PROPID propID, PROPVARIANT* value)
 		break;
 	case kpidMethod:
 		prop = AString(_archive.GetMethod());
+		break;
+	case kpidHeadersSize:
+		prop = _archive.GetHeaderSize();
 		break;
 	case kpidPhySize:
 		//TODO:

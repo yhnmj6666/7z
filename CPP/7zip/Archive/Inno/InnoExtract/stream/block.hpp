@@ -79,7 +79,7 @@ public:
 	 *         Reading from this stream may throw a \ref block_error if a block checksum
 	 *         was invalid.
 	 */
-	static pointer get(std::istream & base, const setup::version & version);
+	static pointer get(std::istream & base, const setup::version & version, size_t* block_size = nullptr);
 	
 };
 

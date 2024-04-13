@@ -24,11 +24,12 @@
 //#include <boost/cstdint.hpp>
 
 #include "../liblzma/lzma.h"
+#ifdef _WIN64
+#pragma comment(lib,"U:/Projects/lib/7-zip/CPP/7zip/Archive/Inno/InnoExtract/liblzma/lib/liblzma_x64d.lib")
+#else
 #ifdef _WIN32
 #pragma comment(lib,"U:/Projects/lib/7-zip/CPP/7zip/Archive/Inno/InnoExtract/liblzma/lib/liblzma_x86d.lib")
 #endif
-#ifdef _WIN64
-#pragma comment(lib,"U:/Projects/lib/7-zip/CPP/7zip/Archive/Inno/InnoExtract/liblzma/lib/liblzma_x64.lib")
 #endif
 
 //#include "../../../../../../C/LzmaDec.h"

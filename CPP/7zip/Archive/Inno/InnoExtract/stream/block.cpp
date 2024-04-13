@@ -151,7 +151,7 @@ NAMES(stream::block_compression, "Compression",
 
 namespace stream {
 
-block_reader::pointer block_reader::get(std::istream & base, const setup::version & version) {
+block_reader::pointer block_reader::get(std::istream & base, const setup::version & version, size_t* block_size) {
 	
 	USE_ENUM_NAMES(block_compression)
 	
@@ -189,6 +189,10 @@ block_reader::pointer block_reader::get(std::istream & base, const setup::versio
 	}
 	
 	debug("[block] size: " << stored_size << "  compression: " << compression);
+
+	if(block_size != nullptr) {
+        *block_size = stored_size;
+    }
 	
 	util::unique_ptr<io::filtering_istream>::type fis(new io::filtering_istream);
 	

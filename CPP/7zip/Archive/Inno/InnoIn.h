@@ -41,9 +41,9 @@ class CEmbeddedFiles {
 public:
 	CEmbeddedFiles() : _pinfo(nullptr), _hasCollision(false), _time(0) {}
 	CEmbeddedFiles(setup::info& info, bool hasCollision, FILETIME time);
-	UInt32 GetNumberOfItems() const;
-	CEmbeddedItem GetItem(UInt32 index) const;
-	HRESULT ExtractItem(UInt32 indice, bool testMode, InteropFileStreamProgressWriter* outStream) const;
+	size_t GetNumberOfItems() const;
+	CEmbeddedItem GetItem(size_t index) const;
+	HRESULT ExtractItem(size_t indice, bool testMode, InteropFileStreamProgressWriter* outStream) const;
 private:
 	const setup::info* _pinfo;
 	bool _hasCollision;
@@ -52,20 +52,21 @@ private:
 	size_t GenerateInstallScriptContent(std::string& outData) const;
 	CEmbeddedItem GenerateLicense() const;
 	size_t GenerateLicenseContent(std::string& outData) const;
-	CEmbeddedItem GenerateLanguageFile(UInt32 langIndex) const;
-	size_t GenerateLanguageFileContent(UInt32 langIndex, std::string& outData) const;
-	CEmbeddedItem GenerateLanguageLicense(UInt32 langIndex) const;
-	size_t GenerateLanguageLicenseContent(UInt32 langIndex, std::string& outData) const;
-	CEmbeddedItem GenerateWizardImage(UInt32 imageIndex) const;
-	size_t GenerateWizardImageContent(UInt32 imageIndex, std::string& outData) const;
-	CEmbeddedItem GenerateWizardImageSmall(UInt32 imageIndex) const;
-	size_t GenerateWizardImageSmallContent(UInt32 imageIndex, std::string& outData) const;
+	CEmbeddedItem GenerateLanguageFile(size_t langIndex) const;
+	size_t GenerateLanguageFileContent(size_t langIndex, std::string& outData) const;
+	CEmbeddedItem GenerateLanguageLicense(size_t langIndex) const;
+	size_t GenerateLanguageLicenseContent(size_t langIndex, std::string& outData) const;
+	CEmbeddedItem GenerateWizardImage(size_t imageIndex) const;
+	size_t GenerateWizardImageContent(size_t imageIndex, std::string& outData) const;
+	CEmbeddedItem GenerateWizardImageSmall(size_t imageIndex) const;
+	size_t GenerateWizardImageSmallContent(size_t imageIndex, std::string& outData) const;
 	const char* const GetMethod() const;
 };
 
 class CInArchive {
 
 public:
+	static void InitializeLog(std::string& filename);
 	HRESULT Open(IInStream* inStream, FILETIME modifiedTime);
 
 	UInt32 GetDataOffset();
@@ -73,7 +74,7 @@ public:
 	UInt32 GetHeaderSize();
 	const char* const GetMethod();
 	std::string GetComment();
-	std::shared_ptr<CAbstractItem> GetItem(UInt32 index);
+	std::shared_ptr<CAbstractItem> GetItem(size_t index);
 	CInArchiveReadProgressQueryHelper GetReadProgressQueryHelper() const;
 	bool CheckCollideLocations(UInt32 index, UInt32& firstAppearance);
 	HRESULT ExtractItem(UInt32 indice, bool testMode, InteropFileStreamProgressWriter* outStream, std::string* savedBuffer = nullptr);
@@ -88,7 +89,7 @@ private:
 	unique_ptr<istream> _pInStream;
 	unique_ptr<stream::slice_reader> _pSliceReader;
 	unique_ptr<chunk_reader> _pChunkReader;
-	std::map<UInt32, UInt32> _collisionLocations; // map of index to first appearance of that index of file entry which has same index into data entry
+	std::map<size_t, size_t> _collisionLocations; // map of index to first appearance of that index of file entry which has same index into data entry
 	stream::chunk _chunk;
 	loader::offsets _offsets;
 	setup::info _info;

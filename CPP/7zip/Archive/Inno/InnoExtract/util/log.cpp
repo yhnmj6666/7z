@@ -30,6 +30,7 @@ bool logger::quiet = false;
 
 size_t logger::total_errors = 0;
 size_t logger::total_warnings = 0;
+std::optional<std::filesystem::path> logger::log_path;
 
 logger::~logger() {
 	
@@ -49,6 +50,13 @@ logger::~logger() {
 			total_errors++;
 			break;
 		}
+	}
+
+	if (log_path.has_value())
+	{
+		std::ofstream ofs(log_path.value(), std::ios_base::app);
+		ofs << buffer.str() << "\n";
+		ofs.close();
 	}
 	
 }

@@ -29,10 +29,11 @@
 
 #include <sstream>
 #include <string>
+#include <filesystem>
 
 //#include <boost/noncopyable.hpp>
 
-#ifdef DEBUG
+#ifdef _DEBUG
 #define debug(...) \
 	if(::logger::debug) \
 		::logger(::logger::Debug) << __VA_ARGS__
@@ -67,7 +68,7 @@ private:
 	std::ostringstream buffer; //! Buffer for the log message excluding level, file and line.
 	
 public:
-	
+	static std::optional<std::filesystem::path> log_path;
 	static size_t total_warnings; //! Total number of \ref log_warning uses so far.
 	static size_t total_errors;   //! Total number of \ref log_error uses so far.
 	
